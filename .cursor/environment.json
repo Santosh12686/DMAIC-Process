@@ -1,0 +1,4 @@
+{
+  "name": "NAB DMAIC Dispute Handling",
+  "install": "python3 -m pip install --user -r requirements-dev.txt"
+}
