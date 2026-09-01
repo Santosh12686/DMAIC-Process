@@ -119,6 +119,10 @@
   input[type=number]{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:#fff}
   input[type=number]:focus{border-color:var(--accent);outline:none}
   .control small.note{display:block;margin-top:5px;color:var(--muted);font-size:11px}
+  .control .help{display:block;margin-top:6px;color:var(--muted);font-size:11.5px;line-height:1.42}
+  .info{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:800;cursor:help;flex:0 0 auto}
+  .info:hover{border-color:var(--accent);color:var(--accent)}
+  .card .label .info{width:15px;height:15px}
   .group-k{grid-column:1/-1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 
   table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
@@ -258,20 +262,29 @@ const SAMPLE = {
 };
 let S = {...SAMPLE};
 
-/* input controls definition */
+/* input controls definition — every attribute carries helptext */
 const INPUTS = [
   {group:'Volume & measured baseline'},
-  {k:'volume', label:'Monthly dispute volume', kind:'number', min:0, step:50, hint:'disputes / month'},
-  {k:'baseline', label:'Measured baseline calls / dispute', kind:'number', min:0, step:0.01, hint:'measured = 1.40', note:'From data/sample_baseline_disputes.csv'},
-  {k:'statusShare', label:'Follow-up calls that are status-chasing', kind:'range', min:0, max:100, step:1, unit:'%', hint:'addressable by visibility'},
+  {k:'volume', label:'Monthly dispute volume', kind:'number', min:0, step:50, hint:'disputes / month',
+    help:'Total inbound transaction disputes lodged per month. Scales the avoided-call count, freed capacity, and any dollar benefit — it does not change the per-dispute projection.'},
+  {k:'baseline', label:'Measured baseline calls / dispute', kind:'number', min:0, step:0.01, hint:'measured = 1.40',
+    help:'Average follow-up ("where\u2019s my case?") calls per dispute today. Measured at 1.40 from data/sample_baseline_disputes.csv — only change it if you have your own measured value.'},
+  {k:'statusShare', label:'Follow-up calls that are status-chasing', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'Of those follow-up calls, the share that are purely status-chasing and so are addressable by proactive updates. The remainder (e.g. new information, complaints) will not be removed by better visibility.'},
   {group:'Improve levers (event-driven status)'},
-  {k:'notify', label:'Notify accuracy', kind:'range', min:0, max:100, step:1, unit:'%', hint:'Brain/Genie-style sends'},
-  {k:'adoption', label:'Customer adoption of updates', kind:'range', min:0, max:100, step:1, unit:'%', hint:'receive & engage'},
-  {k:'target', label:'Target reduction (deck goal)', kind:'range', min:0, max:60, step:1, unit:'%', hint:'−30% in the charter'},
+  {k:'notify', label:'Notify accuracy', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'How reliably the event-driven status updates (Brain/Genie-style) are correctly generated and sent at each milestone: received, info-needed, under-review, finalized.'},
+  {k:'adoption', label:'Customer adoption of updates', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'Share of customers who actually receive and engage with the proactive updates — driven by channel opt-in, app usage and deliverability. Effective reach = notify accuracy × adoption.'},
+  {k:'target', label:'Target reduction (deck goal)', kind:'range', min:0, max:60, step:1, unit:'%',
+    help:'The deck\u2019s follow-up-call reduction goal. The project charter uses \u221230%. The dashed goal line on the projected gauge moves with this value.'},
   {group:'Value assumptions'},
-  {k:'minutes', label:'Minutes saved per avoided call', kind:'number', min:0, step:1, hint:'capacity only'},
-  {k:'investment', label:'Cursor investment', kind:'number', min:0, step:10, unit:'A$/mo', hint:'leading cost input'},
-  {k:'costPerCall', label:'Cost per handled call (optional)', kind:'number', min:0, step:1, unit:'A$', hint:'blank = no $ output', note:'Your assumption — enables break-even; leave 0 to keep dollars off.'}
+  {k:'minutes', label:'Minutes saved per avoided call', kind:'number', min:0, step:1, hint:'capacity only',
+    help:'Average agent handling time saved for each avoided call. Converts avoided calls into freed capacity (hours/month). Capacity only — never a dollar figure.'},
+  {k:'investment', label:'Cursor investment', kind:'number', min:0, step:10, unit:'A$/mo',
+    help:'Your monthly Cursor spend (seats + model/agent usage). Used only as the cost side of break-even — no return on investment is assumed.'},
+  {k:'costPerCall', label:'Cost per handled call (optional)', kind:'number', min:0, step:1, unit:'A$',
+    help:'Optional, your assumption. Your fully-loaded cost to handle one follow-up call. Leave at 0 to keep every dollar figure off; set it to model $ benefit and break-even from your own number (nothing invented).'}
 ];
 
 /* ---------------- model ---------------- */
@@ -300,27 +313,32 @@ const fmt2 = n => n.toFixed(2);
 const aud = n => 'A$'+Math.round(n).toLocaleString();
 
 function pct(x,max){ return Math.max(0,Math.min(100, x/max*100)); }
+function hInfo(t){ const e=t.replace(/"/g,'&quot;'); return `<span class="info" tabindex="0" role="img" aria-label="${e}" title="${e}">i</span>`; }
 
 /* ---------------- inputs render ---------------- */
 function renderInputs(){
   const g=$('#inputs-grid');
+  const esc = s => (s||'').replace(/"/g,'&quot;');
   g.innerHTML = INPUTS.map(it=>{
     if(it.group) return `<div class="group-k">${it.group}</div>`;
     const val=S[it.k];
+    const info = it.help ? `<span class="info" tabindex="0" role="img" aria-label="${esc(it.help)}" title="${esc(it.help)}">i</span>` : '';
+    const helpLine = it.help ? `<small class="help">${it.help}</small>` : '';
     if(it.kind==='range'){
       return `<div class="control">
-        <label for="in-${it.k}">${it.label} <span class="hint">${it.hint||''}</span></label>
+        <label for="in-${it.k}"><span>${it.label} <span class="hint">${it.hint||''}</span></span>${info}</label>
         <div class="rowc">
           <input type="range" id="in-${it.k}" min="${it.min}" max="${it.max}" step="${it.step}" value="${val}"
-            oninput="setInput('${it.k}', this.value)">
+            aria-describedby="help-${it.k}" oninput="setInput('${it.k}', this.value)">
           <span class="val" id="val-${it.k}">${val}${it.unit||''}</span>
-        </div>${it.note?`<small class="note">${it.note}</small>`:''}
+        </div><span id="help-${it.k}">${helpLine}</span>
       </div>`;
     }
     return `<div class="control">
-      <label for="in-${it.k}">${it.label} <span class="hint">${it.unit?it.unit+' · ':''}${it.hint||''}</span></label>
+      <label for="in-${it.k}"><span>${it.label} <span class="hint">${it.unit?it.unit+' · ':''}${it.hint||''}</span></span>${info}</label>
       <div class="rowc"><input type="number" id="in-${it.k}" min="${it.min}" step="${it.step}" value="${val}"
-        oninput="setInput('${it.k}', this.value)"></div>${it.note?`<small class="note">${it.note}</small>`:''}
+        aria-describedby="help-${it.k}" oninput="setInput('${it.k}', this.value)"></div>
+      <span id="help-${it.k}">${helpLine}</span>
     </div>`;
   }).join('');
   updateFormulaNote();
@@ -409,32 +427,33 @@ function tatChart(){
 }
 function renderOutputs(flash){
   const o=compute(S);
+  const beHelp = hInfo('Compares your Cursor investment (A$/mo) against the value of avoided calls (avoided × your cost-per-call). Appears only when you supply a cost-per-call, so no ROI dollars are invented.');
   const benefitCard = o.hasCost
-    ? `<div class="card proj"><div class="label">Break-even <span class="chip proj">your $ assumption</span></div>
+    ? `<div class="card proj"><div class="label">Break-even <span class="chip proj">your $ assumption</span>${beHelp}</div>
          <div class="num">${o.breakEven?'✓ covered':aud(Math.max(0,-o.net))+' short'}</div>
          <div class="meta">gross ${aud(o.gross)}/mo vs invest ${aud(S.investment)}/mo · ROI ×${o.roi.toFixed(1)} <b>(your cost input)</b></div></div>`
-    : `<div class="card proj"><div class="label">Break-even <span class="chip samp">no $ set</span></div>
+    : `<div class="card proj"><div class="label">Break-even <span class="chip samp">no $ set</span>${beHelp}</div>
          <div class="num" style="font-size:20px">Set cost/call →</div>
          <div class="meta">Add a cost-per-call in inputs to model $ benefit vs the ${aud(S.investment)}/mo investment. Benefits otherwise TBD.</div></div>`;
 
   $('#lag-grid').innerHTML = `
     <div class="card lag span2">
-      <div class="label">Measured today <span class="chip meas">Measured</span></div>
+      <div class="label">Measured today <span class="chip meas">Measured</span>${hInfo('The real, as-is baseline computed from the sample dataset (25 disputes). This is a fact and never changes when you edit inputs — only the projected cards do.')}</div>
       <div class="num">${fmt2(S.baseline)}<small> calls / dispute</small></div>
       <div class="meta">−30% goal (≤ 0.98) <b>not achieved</b> as-is · from sample dataset (25 disputes). This fact does not change with inputs.</div>
       <div class="track"><i style="width:${pct(S.baseline,Math.max(1.6,S.baseline*1.15))}%;background:var(--lag)"></i></div>
     </div>
     <div class="card proj span2">${goalGauge(o)}</div>
 
-    <div class="card proj"><div class="label">Avoided follow-up calls</div>
+    <div class="card proj"><div class="label">Avoided follow-up calls${hInfo('Projected follow-up calls removed per month = monthly volume × (baseline − projected calls per dispute). Driven by your volume and the Improve levers.')}</div>
       <div class="num" id="c-avoided">${fmt0(o.avoidedMonth)}<small> /mo</small></div>
       <div class="meta">${fmt2(o.avoidedPer)} fewer per dispute × ${fmt0(S.volume)} disputes <span class="chip proj">Projected</span></div></div>
 
-    <div class="card proj"><div class="label">Capacity freed</div>
+    <div class="card proj"><div class="label">Capacity freed${hInfo('Agent time returned per month = avoided calls × minutes saved per call ÷ 60. Capacity only — deliberately not converted to dollars.')}</div>
       <div class="num" id="c-cap">${fmt0(o.capacityHours)}<small> h/mo</small></div>
       <div class="meta">${S.minutes} min × avoided calls — capacity only, <b>no $</b> <span class="chip proj">Projected</span></div></div>
 
-    <div class="card proj"><div class="label">CSAT · transparency</div>
+    <div class="card proj"><div class="label">CSAT · transparency${hInfo('Modeled dispute-journey CSAT = baseline 3.4 plus an uplift proportional to the modeled reduction (capped at 5). Projection, not a measured result.')}</div>
       <div class="num" id="c-csat">${fmt1(o.csatProjected)}<small> / 5</small></div>
       <div class="track"><i style="width:${o.csatProjected/5*100}%;background:var(--lag)"></i></div>
       <div class="meta">from ${fmt1(S.csatBase)} baseline, modeled uplift <span class="chip proj">Projected</span></div></div>
