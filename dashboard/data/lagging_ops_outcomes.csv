@@ -1,0 +1,10 @@
+metric,value,unit,note
+follow_up_calls_measured,1.40,calls/dispute,MEASURED baseline — data/sample_baseline_disputes.csv
+follow_up_calls_goal,0.98,calls/dispute,GOAL -30% — NOT ACHIEVED
+tat_intake_h,4,hours,SAMPLE median
+tat_docs_h,25,hours,SAMPLE median
+tat_review_h,70,hours,SAMPLE median
+tat_decision_h,7,hours,SAMPLE median
+csat,3.4,score_out_of_5,SAMPLE — dispute journey
+notify_accuracy_pct,96,percent,SAMPLE — Improve-surface (Brain/Genie-style)
+capacity_freed_min_week,210,minutes/week,SAMPLE — capacity only, no dollar value

@@ -1,0 +1,11 @@
+metric,value,unit,note
+active_users,18,users,SAMPLE
+seats,25,seats,SAMPLE
+agent_runs_dmaic,142,runs,SAMPLE — runs on DMAIC artifacts
+prs_merged_dmaic,37,PRs,SAMPLE — PRs on DMAIC artifacts
+model_agent_spend_aud,1240,AUD,SAMPLE — investment input only, not ROI
+tokens_used,6800000,tokens,SAMPLE
+median_issue_to_pr_h,3.2,hours,SAMPLE — time-to-artifact proxy
+median_review_to_merge_h,5.1,hours,SAMPLE — time-to-artifact proxy
+rules_active,6,rules,SAMPLE
+rules_adoption_pct,92,percent,SAMPLE — DMAIC PRs following repo rules
