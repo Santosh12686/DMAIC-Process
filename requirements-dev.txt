@@ -1,0 +1,4 @@
+# Development / validation dependencies for the DMAIC sample package.
+# The analysis app itself (scripts/analyze_disputes.py) uses only the standard
+# library; these are for running the test suite.
+pytest==8.3.4

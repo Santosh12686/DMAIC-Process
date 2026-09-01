@@ -1,0 +1,15 @@
+name: Monthly KPI review reminder
+on:
+  schedule:
+    # 09:00 UTC on the 1st — adjust for AU ops calendar
+    - cron: "0 9 1 * *"
+  workflow_dispatch:
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reminder
+        run: |
+          echo "DMAIC Control: review follow-up call rate + CSAT for dispute handling."
+          echo "See docs/05-control/control-plan.md"
