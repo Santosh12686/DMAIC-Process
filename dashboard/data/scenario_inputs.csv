@@ -1,0 +1,11 @@
+input,default_value,unit,drives,note
+monthly_dispute_volume,1000,disputes/month,avoided calls; capacity; benefit,SAMPLE — your input
+measured_baseline_calls,1.40,calls/dispute,projected calls; goal,MEASURED (data/sample_baseline_disputes.csv)
+status_chasing_share,90,percent,reduction,SAMPLE — share of follow-up calls addressable by visibility
+notify_accuracy,96,percent,reduction; effective reach,SAMPLE — Improve-surface lever
+customer_adoption,70,percent,reduction; effective reach,SAMPLE — Improve-surface lever
+target_reduction,30,percent,goal threshold,Deck goal = -30%
+minutes_saved_per_call,6,minutes,capacity freed,SAMPLE — your input
+cursor_investment,1240,AUD/month,break-even,SAMPLE — leading cost input
+cost_per_handled_call,0,AUD,break-even ($ only when > 0),Optional — your assumption; 0 keeps dollars off
+csat_baseline,3.4,score_out_of_5,projected CSAT,SAMPLE

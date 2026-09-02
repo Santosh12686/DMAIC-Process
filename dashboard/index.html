@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cursor × DMAIC — Interactive Analytics Bridge</title>
+<style>
+  :root{
+    --bg:#F7F7F5; --ink:#1A1A1A; --accent:#F54E00;
+    --lead:#0E7C6B; --lag:#F54E00;
+    --muted:#6B6862; --border:#E4E2DC; --card:#FFFFFF;
+    --card-2:#F0EFEB; --good:#0b6b3a; --good-bg:#E6F4EA; --good-bd:#BFE3CC; --warn:#B54708;
+    --lead-tint:#E7F2F0; --lag-tint:#FDECE4;
+    --radius:14px; --shadow:0 1px 2px rgba(26,26,26,.04),0 8px 24px rgba(26,26,26,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 64px}
+
+  header.top{position:sticky;top:0;z-index:20;background:rgba(247,247,245,.86);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--border)}
+  .top-inner{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+  .logo span{color:var(--accent)}
+  .title h1{font-size:16px;margin:0;letter-spacing:-.01em}
+  .title p{margin:1px 0 0;font-size:12.5px;color:var(--muted)}
+  .spacer{flex:1 1 auto}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:#FBEFDD;border:1px solid #F3D9B5;padding:4px 9px;border-radius:999px}
+  .badge.scenario{color:#0b5c53;background:var(--lead-tint);border-color:#CFE6E1}
+  .btn{border:1px solid var(--border);background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer}
+  .btn:hover{border-color:#cdcabf}
+  .btn.accent{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .story{margin-top:20px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+  .story .lead-line{font-size:14px;color:var(--muted);margin:0 0 14px}
+  .story .lead-line b{color:var(--ink)}
+  .bridge{display:grid;grid-template-columns:1fr 76px 1fr;gap:14px;align-items:stretch}
+  .col{border-radius:12px;padding:14px 16px;border:1px solid var(--border)}
+  .col.lead{background:var(--lead-tint);border-color:#CFE6E1}
+  .col.lag{background:var(--lag-tint);border-color:#F6D3BF}
+  .col .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .col.lead .k{color:var(--lead)} .col.lag .k{color:var(--lag)}
+  .col h3{margin:6px 0 2px;font-size:15px}
+  .col p{margin:0;font-size:12.5px;color:var(--muted)}
+  .arrow{display:grid;place-items:center;color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+
+  section{margin-top:34px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .sec-head .tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+  .tag.lead{color:var(--lead);background:var(--lead-tint);border:1px solid #CFE6E1}
+  .tag.lag{color:#fff;background:var(--lag)}
+  .tag.neutral{color:var(--ink);background:var(--card-2);border:1px solid var(--border)}
+  .tag.input{color:#fff;background:var(--ink)}
+  .sec-head h2{margin:0;font-size:19px;letter-spacing:-.01em}
+  .sec-head .sub{color:var(--muted);font-size:13px}
+
+  .grid{display:grid;gap:14px}
+  .g-4{grid-template-columns:repeat(4,1fr)}
+  .g-3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:960px){.g-4{grid-template-columns:repeat(2,1fr)}.g-3{grid-template-columns:repeat(2,1fr)}.bridge{grid-template-columns:1fr}.arrow{transform:rotate(90deg);height:26px}}
+  @media(max-width:560px){.g-4,.g-3{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .card.lead{border-top:3px solid var(--lead)}
+  .card.lag{border-top:3px solid var(--lag)}
+  .card.proj{border-top:3px solid var(--lag)}
+  .card.imp-direct{border-top:3px solid var(--lead)}
+  .card.imp-model{border-top:3px solid var(--lag)}
+  .card.imp-proof{border-top:3px solid #B9B4A8}
+  #impact .card p{margin:8px 0 0;font-size:12.8px;color:var(--muted);line-height:1.5}
+  .card.span2{grid-column:span 2}
+  @media(max-width:560px){.card.span2{grid-column:span 1}}
+  .card .label{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .card .num{font-size:30px;font-weight:750;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.05;transition:color .15s}
+  .card .num small{font-size:14px;font-weight:600;color:var(--muted)}
+  .card .meta{font-size:12px;color:var(--muted)}
+  .flash{animation:flash .5s ease}
+  @keyframes flash{0%{background:#FFF4EC}100%{background:transparent}}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .chip.samp{color:var(--muted);background:var(--card-2);border:1px solid var(--border)}
+  .chip.meas{color:var(--good);background:var(--good-bg);border:1px solid var(--good-bd)}
+  .chip.proj{color:#fff;background:var(--lag)}
+  .chip.warn{color:#fff;background:var(--warn)}
+
+  .track{height:8px;border-radius:999px;background:var(--card-2);overflow:hidden;margin-top:10px}
+  .track > i{display:block;height:100%;border-radius:999px;transition:width .25s ease}
+
+  /* gauge */
+  .gauge .scale{position:relative;height:44px;margin-top:26px}
+  .gauge .bar{position:absolute;top:15px;left:0;right:0;height:14px;border-radius:999px;background:var(--card-2)}
+  .gauge .fill{position:absolute;top:15px;left:0;height:14px;border-radius:999px;background:linear-gradient(90deg,#F97A3D,var(--lag));transition:width .25s ease}
+  .gauge .fill.ok{background:linear-gradient(90deg,#54b487,var(--good))}
+  .gauge .target{position:absolute;top:4px;height:36px;border-left:2px dashed #1A1A1A;transition:left .25s ease}
+  .gauge .target span{position:absolute;top:-20px;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap}
+  .gauge .mark{position:absolute;top:8px;height:28px;width:2px;transition:left .25s ease}
+  .gauge .mark span{position:absolute;bottom:-18px;transform:translateX(-50%);font-size:10.5px;font-weight:700;white-space:nowrap}
+  .gauge .mark.meas{background:#1A1A1A}
+  .gauge .mark.proj{background:var(--lag)}
+  .gauge-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .status{font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;padding:5px 11px;border-radius:999px}
+  .status.bad{background:var(--warn)} .status.good{background:var(--good)}
+
+  .tat{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+  .tat .row{display:grid;grid-template-columns:64px 1fr 46px;align-items:center;gap:10px;font-size:12.5px}
+  .tat .row b{text-align:right;color:var(--muted);font-weight:600}
+  .tat .bar{height:12px;border-radius:6px;background:linear-gradient(90deg,#F9A66C,var(--lag))}
+
+  /* inputs */
+  .inputs-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+  .inputs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 22px}
+  @media(max-width:900px){.inputs-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.inputs-grid{grid-template-columns:1fr}}
+  .control label{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;font-weight:600;gap:8px}
+  .control label .hint{font-weight:500;color:var(--muted);font-size:11.5px}
+  .control .val{font-variant-numeric:tabular-nums;font-weight:800;color:var(--ink)}
+  .control .rowc{display:flex;align-items:center;gap:10px;margin-top:7px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:var(--card-2);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer}
+  input[type=number]{width:100%;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:#fff}
+  input[type=number]:focus{border-color:var(--accent);outline:none}
+  .control small.note{display:block;margin-top:5px;color:var(--muted);font-size:11px}
+  .control .help{display:block;margin-top:6px;color:var(--muted);font-size:11.5px;line-height:1.42}
+  .info{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:800;cursor:help;flex:0 0 auto}
+  .info:hover{border-color:var(--accent);color:var(--accent)}
+  .card .label .info{width:15px;height:15px}
+  .group-k{grid-column:1/-1;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  thead th{background:var(--card-2);text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--border)}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#FAFAF8}
+  td .src{font-size:12px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pill{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .pill.lead{color:var(--lead);background:var(--lead-tint);border:1px solid #CFE6E1}
+  .pill.lag{color:#fff;background:var(--lag)}
+  .pill.mix{color:var(--ink);background:#FBEFDD;border:1px solid #F3D9B5}
+  .pill.tbd{color:var(--muted);background:var(--card-2);border:1px solid var(--border)}
+
+  .phases{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:6px}
+  @media(max-width:720px){.phases{grid-template-columns:repeat(2,1fr)}}
+  .phase{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;position:relative}
+  .phase .p-k{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .phase h4{margin:6px 0 3px;font-size:14px}
+  .phase p{margin:0;font-size:12px;color:var(--muted)}
+  .phase .state{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px}
+  .state.done{color:var(--good);background:var(--good-bg);border:1px solid var(--good-bd)}
+  .state.now{color:#fff;background:var(--accent)}
+  .state.todo{color:var(--muted);background:var(--card-2);border:1px solid var(--border)}
+  .phase.now{border-color:#F6C6A9;box-shadow:0 0 0 2px #FDE7D9 inset}
+  .note{margin-top:12px;font-size:12.5px;color:var(--muted);background:var(--card-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+  .note b{color:var(--ink)}
+
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);color:var(--muted);font-size:12.5px}
+  footer .disc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  footer a{font-weight:600}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="logo">C<span>·</span></div>
+      <div class="title">
+        <h1>Cursor × DMAIC — Interactive Analytics Bridge</h1>
+        <p>Fill in the missing info → projected ops outcomes update live</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge" id="mode-badge">Sample scenario</span>
+    <button class="btn" onclick="scrollToInputs()">Edit inputs ↓</button>
+    <button class="btn accent" onclick="resetSample()">Reset to sample</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- STORY -->
+  <div class="story">
+    <p class="lead-line">
+      <b>Hero:</b> Cursor is the agentic DMAIC workspace — repo + rules + human judgment.
+      <b>Proof:</b> inbound transaction-dispute handling, where status-anxiety drives repeat calls.
+      <b>Improve surface (not the hero):</b> Brain/Genie-style event-driven status updates.
+      Enter your assumptions below; the <b>projected</b> outcomes recompute instantly. Projections are a model of your
+      inputs — not a delivered result. <b>Measured today stays 1.40 (−30% goal not achieved).</b>
+    </p>
+    <div class="bridge">
+      <div class="col lead"><div class="k">Leading · Cursor analytics</div><h3>What we invest &amp; do</h3>
+        <p>Seats &amp; active users, agent runs / PRs on DMAIC artifacts, model cost (investment), time-to-artifact, rules adoption.</p></div>
+      <div class="arrow" aria-hidden="true">
+        <svg width="40" height="26" viewBox="0 0 40 26" fill="none"><path d="M2 13h30M26 5l8 8-8 8" stroke="#6B6862" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>map
+      </div>
+      <div class="col lag"><div class="k">Lagging · Ops outcomes</div><h3>What changes for customers</h3>
+        <p>Follow-up calls, −30% goal, stage TAT, CSAT / transparency, notify accuracy, freed capacity — projected from your inputs.</p></div>
+    </div>
+  </div>
+
+  <!-- IMPACT FRAMING -->
+  <section id="impact">
+    <div class="sec-head"><span class="tag neutral">How to read</span><h2>Reading Cursor’s impact</h2>
+      <span class="sub">What is measurable now vs modeled vs what will confirm it</span></div>
+    <div class="grid g-3">
+      <div class="card imp-direct">
+        <div class="label"><b>Direct — measurable now</b> <span class="chip meas">Leading</span></div>
+        <p>Cursor produced the DMAIC machinery: agent runs &amp; PRs on the Define→Control docs, the event catalogue, the SOP and the rules — faster and consistently. The leading numbers are Cursor’s real footprint today.</p>
+      </div>
+      <div class="card imp-model">
+        <div class="label"><b>Modeled — projected link</b> <span class="chip proj">Lagging</span></div>
+        <p>The sliders (notify accuracy × adoption × status-chasing share) model how that work converts into fewer status-chasing calls. This is a projection you agree with the customer — not proof. The measured 1.40 baseline stays fixed.</p>
+      </div>
+      <div class="card imp-proof">
+        <div class="label"><b>Proof — what confirms it</b> <span class="chip samp">Next</span></div>
+        <p>To turn “reflects” into “proves”: wire live Cursor analytics, run a before/after (ideally with a control cohort) on follow-up calls, and trace agent runs → shipped notify events → calls avoided.</p>
+      </div>
+    </div>
+    <div class="note"><b>In one line:</b> Cursor delivered the improvement machinery (leading, defensible today); the customer-facing −30% is a <b>projected</b> outcome under your inputs — Cursor is <b>not</b> claimed to have delivered it. The pilot’s before/after is what confirms it.</div>
+  </section>
+
+  <!-- INPUTS -->
+  <section id="inputs">
+    <div class="sec-head">
+      <span class="tag input">Inputs</span>
+      <h2>Fill in the missing information</h2>
+      <span class="sub">Your assumptions drive the projected outcomes in section B</span>
+    </div>
+    <div class="inputs-wrap">
+      <div class="inputs-grid" id="inputs-grid"></div>
+      <div class="note" id="formula-note"></div>
+    </div>
+  </section>
+
+  <!-- A: LEADING -->
+  <section id="leading">
+    <div class="sec-head"><span class="tag lead">A · Leading</span><h2>Cursor analytics</h2>
+      <span class="sub">Inputs &amp; activity — investment only, no ROI claims</span></div>
+    <div class="grid g-4" id="lead-grid"></div>
+  </section>
+
+  <!-- B: LAGGING -->
+  <section id="lagging">
+    <div class="sec-head"><span class="tag lag">B · Lagging</span><h2>Ops outcomes</h2>
+      <span class="sub">Measured today (fact) vs projected (your inputs) — CFO-safe, no invented dollars</span></div>
+    <div class="grid g-4" id="lag-grid"></div>
+  </section>
+
+  <!-- C: MAPPING -->
+  <section id="mapping">
+    <div class="sec-head"><span class="tag neutral">C · Mapping</span><h2>Success Plan 2×2 — goals &amp; outcomes</h2>
+      <span class="sub">Technical goals + business outcomes → metric, source, leading/lagging</span></div>
+    <table><thead><tr><th style="width:24%">Deck goal / outcome</th><th style="width:32%">Metric</th><th style="width:28%">Source</th><th style="width:16%">Leading or Lagging</th></tr></thead>
+      <tbody id="map-body"></tbody></table>
+  </section>
+
+  <!-- D: PHASES -->
+  <section id="control">
+    <div class="sec-head"><span class="tag neutral">D · Control</span><h2>DMAIC phase strip</h2><span class="sub">Define → Control (M0 → M4)</span></div>
+    <div class="phases" id="phase-strip"></div>
+    <div class="note"><b>Control loop:</b> a new data source triggers <b>auto re-measure &amp; alert</b> against the baseline —
+      not a fully automated DMAIC. Humans still own Analyze/Improve gate decisions.</div>
+  </section>
+
+  <footer>
+    <div class="disc">
+      <b>Disclaimer.</b> Demo / training sample only. Not affiliated with or endorsed by National Australia Bank.
+      The <b>1.4 measured</b> baseline is computed from the sample dataset; all other figures are <b>ILLUSTRATIVE / SAMPLE</b>
+      or <b>PROJECTED from your inputs</b> — a model, not a delivered result. Cursor is <b>not</b> claimed to have delivered
+      the −30% goal, and no ROI dollars are invented (dollar outputs appear only when you supply a cost-per-call assumption).
+      No customer data or secrets are included.
+      Improve-surface context (public): <a href="https://www.brokernews.com.au/news/breaking-news/nab-breaks-new-ground-with-conversational-ai-data-tool-289542.aspx" target="_blank" rel="noopener">BrokerNews — NAB conversational AI data tool</a>.
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ---------------- sample defaults ---------------- */
+const SAMPLE = {
+  volume:1000, baseline:1.40, statusShare:90,
+  notify:96, adoption:70, target:30,
+  minutes:6, investment:1240, costPerCall:0,
+  csatBase:3.4,
+  // leading telemetry (Cursor-side sample)
+  activeUsers:18, seats:25, agentRuns:142, prs:37, tokensM:6.8,
+  issueToPr:3.2, reviewToMerge:5.1, rulesActive:6, rulesAdoption:92
+};
+let S = {...SAMPLE};
+
+/* input controls definition — every attribute carries helptext */
+const INPUTS = [
+  {group:'Volume & measured baseline'},
+  {k:'volume', label:'Monthly dispute volume', kind:'number', min:0, step:50, hint:'disputes / month',
+    help:'Total inbound transaction disputes lodged per month. Scales the avoided-call count, freed capacity, and any dollar benefit — it does not change the per-dispute projection.'},
+  {k:'baseline', label:'Measured baseline calls / dispute', kind:'number', min:0, step:0.01, hint:'measured = 1.40',
+    help:'Average follow-up ("where\u2019s my case?") calls per dispute today. Measured at 1.40 from data/sample_baseline_disputes.csv — only change it if you have your own measured value.'},
+  {k:'statusShare', label:'Follow-up calls that are status-chasing', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'Of those follow-up calls, the share that are purely status-chasing and so are addressable by proactive updates. The remainder (e.g. new information, complaints) will not be removed by better visibility.'},
+  {group:'Improve levers (event-driven status)'},
+  {k:'notify', label:'Notify accuracy', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'How reliably the event-driven status updates (Brain/Genie-style) are correctly generated and sent at each milestone: received, info-needed, under-review, finalized.'},
+  {k:'adoption', label:'Customer adoption of updates', kind:'range', min:0, max:100, step:1, unit:'%',
+    help:'Share of customers who actually receive and engage with the proactive updates — driven by channel opt-in, app usage and deliverability. Effective reach = notify accuracy × adoption.'},
+  {k:'target', label:'Target reduction (deck goal)', kind:'range', min:0, max:60, step:1, unit:'%',
+    help:'The deck\u2019s follow-up-call reduction goal. The project charter uses \u221230%. The dashed goal line on the projected gauge moves with this value.'},
+  {group:'Value assumptions'},
+  {k:'minutes', label:'Minutes saved per avoided call', kind:'number', min:0, step:1, hint:'capacity only',
+    help:'Average agent handling time saved for each avoided call. Converts avoided calls into freed capacity (hours/month). Capacity only — never a dollar figure.'},
+  {k:'investment', label:'Cursor investment', kind:'number', min:0, step:10, unit:'A$/mo',
+    help:'Your monthly Cursor spend (seats + model/agent usage). Used only as the cost side of break-even — no return on investment is assumed.'},
+  {k:'costPerCall', label:'Cost per handled call (optional)', kind:'number', min:0, step:1, unit:'A$',
+    help:'Optional, your assumption. Your fully-loaded cost to handle one follow-up call. Leave at 0 to keep every dollar figure off; set it to model $ benefit and break-even from your own number (nothing invented).'}
+];
+
+/* ---------------- model ---------------- */
+function compute(s){
+  const reduction = Math.max(0, Math.min(1, (s.statusShare/100)*(s.notify/100)*(s.adoption/100)));
+  const projected = s.baseline*(1-reduction);
+  const goalCalls = s.baseline*(1 - s.target/100);
+  const goalMet = projected <= goalCalls + 1e-9;
+  const avoidedPer = Math.max(0, s.baseline - projected);
+  const avoidedMonth = s.volume * avoidedPer;
+  const capacityHours = avoidedMonth * s.minutes / 60;
+  const csatProjected = Math.min(5, s.csatBase + 1.3*reduction);
+  const hasCost = s.costPerCall > 0;
+  const gross = hasCost ? avoidedMonth * s.costPerCall : null;
+  const net = hasCost ? gross - s.investment : null;
+  const roi = (hasCost && s.investment>0) ? gross / s.investment : null;
+  const breakEven = hasCost ? gross >= s.investment : null;
+  return {reduction, projected, goalCalls, goalMet, avoidedPer, avoidedMonth, capacityHours, csatProjected, hasCost, gross, net, roi, breakEven};
+}
+
+/* ---------------- helpers ---------------- */
+const $ = s => document.querySelector(s);
+const fmt0 = n => Math.round(n).toLocaleString();
+const fmt1 = n => n.toFixed(1);
+const fmt2 = n => n.toFixed(2);
+const aud = n => 'A$'+Math.round(n).toLocaleString();
+
+function pct(x,max){ return Math.max(0,Math.min(100, x/max*100)); }
+function hInfo(t){ const e=t.replace(/"/g,'&quot;'); return `<span class="info" tabindex="0" role="img" aria-label="${e}" title="${e}">i</span>`; }
+
+/* ---------------- inputs render ---------------- */
+function renderInputs(){
+  const g=$('#inputs-grid');
+  const esc = s => (s||'').replace(/"/g,'&quot;');
+  g.innerHTML = INPUTS.map(it=>{
+    if(it.group) return `<div class="group-k">${it.group}</div>`;
+    const val=S[it.k];
+    const info = it.help ? `<span class="info" tabindex="0" role="img" aria-label="${esc(it.help)}" title="${esc(it.help)}">i</span>` : '';
+    const helpLine = it.help ? `<small class="help">${it.help}</small>` : '';
+    if(it.kind==='range'){
+      return `<div class="control">
+        <label for="in-${it.k}"><span>${it.label} <span class="hint">${it.hint||''}</span></span>${info}</label>
+        <div class="rowc">
+          <input type="range" id="in-${it.k}" min="${it.min}" max="${it.max}" step="${it.step}" value="${val}"
+            aria-describedby="help-${it.k}" oninput="setInput('${it.k}', this.value)">
+          <span class="val" id="val-${it.k}">${val}${it.unit||''}</span>
+        </div><span id="help-${it.k}">${helpLine}</span>
+      </div>`;
+    }
+    return `<div class="control">
+      <label for="in-${it.k}"><span>${it.label} <span class="hint">${it.unit?it.unit+' · ':''}${it.hint||''}</span></span>${info}</label>
+      <div class="rowc"><input type="number" id="in-${it.k}" min="${it.min}" step="${it.step}" value="${val}"
+        aria-describedby="help-${it.k}" oninput="setInput('${it.k}', this.value)"></div>
+      <span id="help-${it.k}">${helpLine}</span>
+    </div>`;
+  }).join('');
+  updateFormulaNote();
+}
+function updateFormulaNote(){
+  $('#formula-note').innerHTML = `<b>How outcomes are computed (transparent):</b>
+    reduction = status-chasing% × notify accuracy% × adoption%;
+    projected calls = baseline × (1 − reduction);
+    avoided/month = volume × (baseline − projected);
+    capacity = avoided × minutes ÷ 60;
+    dollars appear only if you set a cost-per-call. Goal is met when projected ≤ baseline × (1 − target%).`;
+}
+function setInput(k,v){
+  const num = parseFloat(v);
+  S[k] = isNaN(num) ? 0 : num;
+  const valEl = document.getElementById('val-'+k);
+  if(valEl){ const it=INPUTS.find(i=>i.k===k); valEl.textContent = v + (it.unit||''); }
+  const changed = JSON.stringify(S)!==JSON.stringify(SAMPLE);
+  const b=$('#mode-badge'); b.textContent = changed?'Your scenario · projection':'Sample scenario';
+  b.classList.toggle('scenario', changed);
+  renderOutputs(true);
+}
+function resetSample(){
+  S={...SAMPLE};
+  renderInputs();
+  const b=$('#mode-badge'); b.textContent='Sample scenario'; b.classList.remove('scenario');
+  renderOutputs(false);
+  renderLeading();
+}
+function scrollToInputs(){ document.getElementById('inputs').scrollIntoView({behavior:'smooth'}); }
+
+/* ---------------- leading ---------------- */
+function sparkline(values,color){
+  const w=180,h=34,pad=3,min=Math.min(...values),max=Math.max(...values),rng=(max-min)||1;
+  const pts=values.map((val,i)=>[pad+i*((w-2*pad)/(values.length-1)), h-pad-((val-min)/rng)*(h-2*pad)]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=`${d} L ${pts[pts.length-1][0].toFixed(1)} ${h-pad} L ${pts[0][0].toFixed(1)} ${h-pad} Z`;
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="margin-top:10px">
+    <path d="${area}" fill="${color}" opacity=".12"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="3" fill="${color}"/></svg>`;
+}
+function renderLeading(){
+  const L=S;
+  const cards=[
+    {label:'Active users / seats', num:`${L.activeUsers}<small> / ${L.seats} seats</small>`,
+      extra: sparkline([12,14,15,16,17,18],'#0E7C6B')+`<div class="meta">${Math.round(L.activeUsers/L.seats*100)}% seat utilisation <span class="chip samp">Sample</span></div>`},
+    {label:'Agent runs · PRs on DMAIC artifacts', num:`${L.agentRuns}<small> runs · ${L.prs} PRs</small>`,
+      extra: sparkline([8,15,22,28,31,38],'#0E7C6B')+`<div class="meta">runs on define→control docs <span class="chip samp">Sample</span></div>`},
+    {label:'Model / agent cost', num:`${aud(L.investment)}`,
+      extra:`<div class="meta">${L.tokensM}M tokens · <b>investment input only</b> — no ROI <span class="chip samp">from inputs</span></div>`},
+    {label:'Time-to-artifact (proxies)', num:`${L.issueToPr}<small> h issue→PR</small>`,
+      extra:`<div class="meta">${L.reviewToMerge} h review→merge <span class="chip samp">Sample</span></div>`},
+    {label:'Rules adoption', num:`${L.rulesAdoption}<small>%</small>`,
+      extra:`<div class="track"><i style="width:${L.rulesAdoption}%;background:#0E7C6B"></i></div><div class="meta">${L.rulesActive} rules active · DMAIC PRs following repo rules <span class="chip samp">Sample</span></div>`},
+  ];
+  $('#lead-grid').innerHTML = cards.map(c=>`<div class="card lead"><div class="label">${c.label}</div><div class="num">${c.num}</div>${c.extra||''}</div>`).join('');
+}
+
+/* ---------------- lagging (measured + projected) ---------------- */
+function goalGauge(o){
+  const max=Math.max(1.6, S.baseline*1.15);
+  const fillW=pct(o.projected,max), tgt=pct(o.goalCalls,max), meas=pct(S.baseline,max), prj=pct(o.projected,max);
+  return `<div class="gauge">
+    <div class="label">Projected follow-up calls / dispute — vs <b>−${S.target}% goal</b></div>
+    <div style="display:flex;align-items:flex-end;gap:10px;margin-top:6px">
+      <div class="num" id="proj-num" style="margin:0">${fmt2(o.projected)}</div>
+      <span class="chip proj">Projected</span>
+    </div>
+    <div class="scale">
+      <div class="bar"></div>
+      <div class="fill ${o.goalMet?'ok':''}" style="width:${fillW}%"></div>
+      <div class="mark meas" style="left:${meas}%"><span>measured ${fmt2(S.baseline)}</span></div>
+      <div class="mark proj" style="left:${prj}%"></div>
+      <div class="target" style="left:${tgt}%"><span>goal ≤ ${fmt2(o.goalCalls)}</span></div>
+    </div>
+    <div class="gauge-row">
+      <span class="status ${o.goalMet?'good':'bad'}">${o.goalMet?'Projected: goal met':'Projected: goal not met'}</span>
+      <span class="meta">Reduction modeled: <b>${Math.round(o.reduction*100)}%</b>. Projection only — measured today is ${fmt2(S.baseline)} (not achieved).</span>
+    </div></div>`;
+}
+function tatChart(){
+  const t={intake:4,docs:25,review:70,decision:7};
+  const rows=[['Intake',t.intake],['Docs',t.docs],['Review',t.review],['Decision',t.decision]];
+  const mx=Math.max(...rows.map(r=>r[1]));
+  return `<div class="tat">`+rows.map(([k,val])=>`<div class="row"><span>${k}</span><span class="bar" style="width:${Math.max(4,val/mx*100)}%"></span><b>${val}h</b></div>`).join('')+`</div>`;
+}
+function renderOutputs(flash){
+  const o=compute(S);
+  const beHelp = hInfo('Compares your Cursor investment (A$/mo) against the value of avoided calls (avoided × your cost-per-call). Appears only when you supply a cost-per-call, so no ROI dollars are invented.');
+  const benefitCard = o.hasCost
+    ? `<div class="card proj"><div class="label">Break-even <span class="chip proj">your $ assumption</span>${beHelp}</div>
+         <div class="num">${o.breakEven?'✓ covered':aud(Math.max(0,-o.net))+' short'}</div>
+         <div class="meta">gross ${aud(o.gross)}/mo vs invest ${aud(S.investment)}/mo · ROI ×${o.roi.toFixed(1)} <b>(your cost input)</b></div></div>`
+    : `<div class="card proj"><div class="label">Break-even <span class="chip samp">no $ set</span>${beHelp}</div>
+         <div class="num" style="font-size:20px">Set cost/call →</div>
+         <div class="meta">Add a cost-per-call in inputs to model $ benefit vs the ${aud(S.investment)}/mo investment. Benefits otherwise TBD.</div></div>`;
+
+  $('#lag-grid').innerHTML = `
+    <div class="card lag span2">
+      <div class="label">Measured today <span class="chip meas">Measured</span>${hInfo('The real, as-is baseline computed from the sample dataset (25 disputes). This is a fact and never changes when you edit inputs — only the projected cards do.')}</div>
+      <div class="num">${fmt2(S.baseline)}<small> calls / dispute</small></div>
+      <div class="meta">−30% goal (≤ 0.98) <b>not achieved</b> as-is · from sample dataset (25 disputes). This fact does not change with inputs.</div>
+      <div class="track"><i style="width:${pct(S.baseline,Math.max(1.6,S.baseline*1.15))}%;background:var(--lag)"></i></div>
+    </div>
+    <div class="card proj span2">${goalGauge(o)}</div>
+
+    <div class="card proj"><div class="label">Avoided follow-up calls${hInfo('Projected follow-up calls removed per month = monthly volume × (baseline − projected calls per dispute). Driven by your volume and the Improve levers.')}</div>
+      <div class="num" id="c-avoided">${fmt0(o.avoidedMonth)}<small> /mo</small></div>
+      <div class="meta">${fmt2(o.avoidedPer)} fewer per dispute × ${fmt0(S.volume)} disputes <span class="chip proj">Projected</span></div></div>
+
+    <div class="card proj"><div class="label">Capacity freed${hInfo('Agent time returned per month = avoided calls × minutes saved per call ÷ 60. Capacity only — deliberately not converted to dollars.')}</div>
+      <div class="num" id="c-cap">${fmt0(o.capacityHours)}<small> h/mo</small></div>
+      <div class="meta">${S.minutes} min × avoided calls — capacity only, <b>no $</b> <span class="chip proj">Projected</span></div></div>
+
+    <div class="card proj"><div class="label">CSAT · transparency${hInfo('Modeled dispute-journey CSAT = baseline 3.4 plus an uplift proportional to the modeled reduction (capped at 5). Projection, not a measured result.')}</div>
+      <div class="num" id="c-csat">${fmt1(o.csatProjected)}<small> / 5</small></div>
+      <div class="track"><i style="width:${o.csatProjected/5*100}%;background:var(--lag)"></i></div>
+      <div class="meta">from ${fmt1(S.csatBase)} baseline, modeled uplift <span class="chip proj">Projected</span></div></div>
+
+    ${benefitCard}
+
+    <div class="card proj span2"><div class="label">Stage TAT (median hours) <span class="chip samp">Sample</span></div>${tatChart()}
+      <div class="meta">Investigation SLA unchanged by design — visibility, not speed, is the lever.</div></div>
+
+    <div class="card proj span2"><div class="label">Notify accuracy <span class="chip warn">Improve surface</span></div>
+      <div class="num">${S.notify}<small>%</small> <small style="color:var(--muted)">→ ${S.adoption}% adoption</small></div>
+      <div class="track"><i style="width:${(S.notify/100)*(S.adoption/100)*100}%;background:var(--lag)"></i></div>
+      <div class="meta">effective reach = notify × adoption = <b>${Math.round((S.notify/100)*(S.adoption/100)*100)}%</b> <span class="chip proj">from inputs</span></div></div>
+  `;
+  if(flash){ ['proj-num','c-avoided','c-cap','c-csat'].forEach(id=>{const e=document.getElementById(id); if(e){e.classList.remove('flash'); void e.offsetWidth; e.classList.add('flash');}}); }
+}
+
+/* ---------------- mapping + phases ---------------- */
+const MAPPING=[
+  ["Trusted baseline + TAT","1.4 follow-up calls/dispute; stage TAT medians","data/sample_baseline_disputes.csv","Lagging"],
+  ["Event catalogue / hooks","5 milestone events wired; notify × adoption reach","docs/04-improve/solution-design.md","Mix"],
+  ["Control-in-repo","6 rules active; 92% DMAIC PRs follow rules; SOP in repo",".cursor rules + docs/05-control","Leading"],
+  ["−30% Goal","projected vs 0.98 target (from your inputs)","inputs + project charter","Lagging"],
+  ["CSAT","projected uplift from baseline 3.4","data + model","Lagging"],
+  ["Reusable pattern","142 agent runs / 37 PRs on DMAIC artifacts (SAMPLE)","Cursor analytics","Leading"],
+  ["Break-even (Cursor cost vs TBD benefits)","invest A$/mo vs avoided-call value (your cost input)","Cursor billing (stub) + ops warehouse","TBD"]
+];
+function pillFor(kind){const m={Leading:['lead','Leading'],Lagging:['lag','Lagging'],Mix:['mix','Leading→Lagging'],TBD:['tbd','TBD']};const[c,t]=m[kind]||['tbd',kind];return `<span class="pill ${c}">${t}</span>`;}
+function renderMapping(){$('#map-body').innerHTML=MAPPING.map(([g,m,s,k])=>`<tr><td><b>${g}</b></td><td>${m}</td><td><span class="src">${s}</span></td><td>${pillFor(k)}</td></tr>`).join('');}
+const PHASES=[["M0 · Define","Charter + scope","done","Problem, VOC, −30% goal set"],["M1 · Measure","Baseline","done","1.4 calls measured from data"],["M2 · Analyze","Root cause","done","Black-hole visibility gap"],["M3 · Improve","Event-driven status","now","Brain/Genie hooks — pilot"],["M4 · Control","SOP + auto re-measure","todo","Rules + monthly KPI alerts"]];
+function renderPhases(){const lbl={done:'Done',now:'Now',todo:'Next'};$('#phase-strip').innerHTML=PHASES.map(([k,t,st,d])=>`<div class="phase ${st}"><span class="state ${st}">${lbl[st]}</span><div class="p-k">${k}</div><h4>${t}</h4><p>${d}</p></div>`).join('');}
+
+/* ---------------- init ---------------- */
+renderInputs(); renderLeading(); renderOutputs(false); renderMapping(); renderPhases();
+</script>
+</body>
+</html>

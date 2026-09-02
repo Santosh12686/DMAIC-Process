@@ -1,0 +1,8 @@
+deck_goal_outcome,metric,source,leading_or_lagging
+Trusted baseline + TAT,1.4 follow-up calls/dispute; stage TAT medians,data/sample_baseline_disputes.csv,Lagging
+Event catalogue / hooks,5 milestone events wired; notify accuracy 96% (SAMPLE),docs/04-improve/solution-design.md,Leading (delivery) -> Lagging (accuracy)
+Control-in-repo,6 rules active; 92% DMAIC PRs follow rules; SOP in repo,.cursor rules + docs/05-control,Leading
+-30% Goal,follow-up calls 1.40 vs 0.98 target (not achieved),data + project charter,Lagging
+CSAT,3.4 / 5 dispute journey (SAMPLE),data/sample_baseline_disputes.csv,Lagging
+Reusable pattern,142 agent runs / 37 PRs on DMAIC artifacts (SAMPLE),Cursor analytics,Leading
+Break-even (Cursor cost vs TBD benefits),spend A$1,240 (SAMPLE investment); benefits TBD,Cursor billing (stub) + ops warehouse,Leading (cost) / TBD
