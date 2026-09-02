@@ -53,6 +53,19 @@ $ benefit        = avoided × cost-per-call     (only when you set a cost-per-ca
 - **D · Control / DMAIC phase strip:** M0 → M4 (Define → Control). A new data source triggers
   **auto re-measure & alert** against the baseline — not a fully automated DMAIC.
 
+## Reading Cursor's impact (framing)
+A "Reading Cursor's impact" panel (below the story bridge) states honestly how the dashboard
+reflects impact, in three parts:
+- **Direct — measurable now:** Cursor produced the DMAIC machinery (agent runs / PRs on the docs,
+  event catalogue, SOP, rules). This leading footprint is defensible today.
+- **Modeled — projected link:** the sliders model how that work converts into fewer status-chasing
+  calls — a projection agreed with the customer, not proof; the measured 1.40 baseline stays fixed.
+- **Proof — what confirms it:** wire live Cursor analytics, run a before/after (ideally with a
+  control cohort), and trace agent runs → shipped notify events → calls avoided.
+
+In one line: Cursor delivers the improvement machinery (leading); the −30% is a **projected**
+outcome under your inputs — not claimed as delivered — and the pilot's before/after confirms it.
+
 ## Where live data would come from
 Leading Cursor analytics (seats, agent runs, spend) would come from the Cursor Admin Analytics API;
 lagging inputs (dispute volume, CSAT, cost-per-call) from an ops warehouse (dispute case system,

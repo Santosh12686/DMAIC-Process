@@ -67,6 +67,10 @@
   .card.lead{border-top:3px solid var(--lead)}
   .card.lag{border-top:3px solid var(--lag)}
   .card.proj{border-top:3px solid var(--lag)}
+  .card.imp-direct{border-top:3px solid var(--lead)}
+  .card.imp-model{border-top:3px solid var(--lag)}
+  .card.imp-proof{border-top:3px solid #B9B4A8}
+  #impact .card p{margin:8px 0 0;font-size:12.8px;color:var(--muted);line-height:1.5}
   .card.span2{grid-column:span 2}
   @media(max-width:560px){.card.span2{grid-column:span 1}}
   .card .label{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -193,6 +197,27 @@
         <p>Follow-up calls, −30% goal, stage TAT, CSAT / transparency, notify accuracy, freed capacity — projected from your inputs.</p></div>
     </div>
   </div>
+
+  <!-- IMPACT FRAMING -->
+  <section id="impact">
+    <div class="sec-head"><span class="tag neutral">How to read</span><h2>Reading Cursor’s impact</h2>
+      <span class="sub">What is measurable now vs modeled vs what will confirm it</span></div>
+    <div class="grid g-3">
+      <div class="card imp-direct">
+        <div class="label"><b>Direct — measurable now</b> <span class="chip meas">Leading</span></div>
+        <p>Cursor produced the DMAIC machinery: agent runs &amp; PRs on the Define→Control docs, the event catalogue, the SOP and the rules — faster and consistently. The leading numbers are Cursor’s real footprint today.</p>
+      </div>
+      <div class="card imp-model">
+        <div class="label"><b>Modeled — projected link</b> <span class="chip proj">Lagging</span></div>
+        <p>The sliders (notify accuracy × adoption × status-chasing share) model how that work converts into fewer status-chasing calls. This is a projection you agree with the customer — not proof. The measured 1.40 baseline stays fixed.</p>
+      </div>
+      <div class="card imp-proof">
+        <div class="label"><b>Proof — what confirms it</b> <span class="chip samp">Next</span></div>
+        <p>To turn “reflects” into “proves”: wire live Cursor analytics, run a before/after (ideally with a control cohort) on follow-up calls, and trace agent runs → shipped notify events → calls avoided.</p>
+      </div>
+    </div>
+    <div class="note"><b>In one line:</b> Cursor delivered the improvement machinery (leading, defensible today); the customer-facing −30% is a <b>projected</b> outcome under your inputs — Cursor is <b>not</b> claimed to have delivered it. The pilot’s before/after is what confirms it.</div>
+  </section>
 
   <!-- INPUTS -->
   <section id="inputs">
